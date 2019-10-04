@@ -1,15 +1,16 @@
 ---
-title: "HW2_JJKOHLER"
+title: "Homework 2"
 author: "Jared Kohler"
 date: "10/1/2019"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
 require(rgdal)
 require(leaflet)
 require(leaflet.extras)
-
 require(dplyr)
 require(readxl)
 require(stringr)
@@ -21,27 +22,41 @@ wells <- readOGR("pa_drilling_2000_2016.geojson")
 plot(wells)
 ```
 
+## Oil and Gas Wells Drilled in the State of PA (2000-2019)
+
+The map shows new wells drilled in Pennsylvania since the year 2000. Wells are color-coded by type. 
+The data is a lightly cleaned version of the dataset found here:
+https://www.pasda.psu.edu/uci/DataSummary.aspx?dataset=1088
 
 ```{r}
-pal <- colorFactor(c("darkmagenta", "indianred2", 'darkgoldenrod1', 'blue', 'orange', 'darkolivegreen4'), 
+pal <- colorFactor(c("darkmagenta", "indianred2", 'darkgoldenrod1', 'blue', 'lightblue', 'darkgreen'), 
                    domain=c('COMB. OIL&GAS', 'GAS', 'INJECTION', 'MULTIPLE WELL BORE TYPE', 'OBSERVATION', 'OIL'))
 
-leaflet(data = wells) %>% addMapPane(name = "polygons", zIndex = 410) %>% 
-  addMapPane(name = "maplabels", zIndex = 420) %>% # higher zIndex rendered on top
-  addProviderTiles("CartoDB.PositronNoLabels", group='Positron') %>% 
-  addProviderTiles("CartoDB.PositronOnlyLabels", options = leafletOptions(pane = "maplabels"),
-                   group = "map labels") %>%
+
+
+
+m <- leaflet(data = wells) %>% 
+  addProviderTiles("CartoDB.PositronNoLabels", group='Monotone') %>% 
+  addProviderTiles("Stamen.TerrainBackground", group='Terrain') %>% 
+  addMapPane(name = "dots", zIndex = 410) %>%
+  # addMapPane(name = "maplabels", zIndex = 500) %>% # higher zIndex rendered on top
   addCircles(popup = ~as.character(well_type),
                    label = ~as.character(well_type),
                    radius = 1,
                    color = ~pal(well_type),
                    stroke = FALSE, 
-                   fillOpacity =0.5,
+                   fillOpacity =0.7,
                    group = "Well Locations",
-                   options = leafletOptions(pane = "polygons")) %>% 
-  addLayersControl(baseGroups = c("Positron"),
-                   overlayGroups = c("map labels",
-                                     "Well Locations"))
+                   options = pathOptions(pane='dots')) %>%
+  addProviderTiles("CartoDB.PositronOnlyLabels",
+                   options=leafletOptions(zIndex=480),
+                   group = "map labels") %>%
+  addLayersControl(baseGroups = c("Terrain","Monotone"),
+                   overlayGroups = c("map labels","Well Locations")) %>%
+      addLegend("bottomright", pal = pal, values = ~well_type,
+    title = "Well Type ",
+    opacity = 0.6)
+m
 ```
 
 

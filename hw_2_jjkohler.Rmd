@@ -19,7 +19,7 @@ require(stringr)
 
 ```{r}
 wells <- readOGR("pa_drilling_2000_2016.geojson")
-plot(wells)
+pipelines <- readOGR('natural_gas_pipelines_j96.json')
 ```
 
 ## Oil and Gas Wells Drilled in the State of PA (2000-2019)
@@ -59,10 +59,36 @@ m <- leaflet(data = wells) %>%
 m
 ```
 
+## Natural Gas Pipelines
 
-```{r cars}
-summary(cars)
+Taken from the Harvard World Map datasets found at:
+https://worldmap.harvard.edu/data/geonode:natural_gas_pipelines_j96
+
+```{r}
+
+
+m <- leaflet(data = pipelines) %>% 
+  setView(60, 40, zoom = 2) %>%
+  addPolylines(weight = 1, color = 'green', 
+               opacity=0.7,
+               popup = ~as.character(Name),
+               label = ~as.character(Name),
+               smoothFactor = 0.1,
+               highlightOptions = 
+                 highlightOptions(color = "white", 
+                                  weight = 3, 
+                                  bringToFront = F, 
+                                  opacity = .7)) %>% 
+  addProviderTiles("CartoDB.DarkMatter", group='Monotone')
+  # addLayersControl(baseGroups = c("Terrain","Monotone"),
+                   # overlayGroups = c("map labels","Well Locations")) %>%
+    #   addLegend("bottomright", pal = pal, values = ~well_type,
+    # title = "Well Type ",
+    # opacity = 0.6)
+m
 ```
+
+
 
 ## Including Plots
 

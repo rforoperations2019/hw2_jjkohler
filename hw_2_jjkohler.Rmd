@@ -33,13 +33,11 @@ pal <- colorFactor(c("darkmagenta", "indianred2", 'darkgoldenrod1', 'blue', 'lig
                    domain=c('COMB. OIL&GAS', 'GAS', 'INJECTION', 'MULTIPLE WELL BORE TYPE', 'OBSERVATION', 'OIL'))
 
 
-
-
 m <- leaflet(data = wells) %>% 
   addProviderTiles("CartoDB.PositronNoLabels", group='Monotone') %>% 
   addProviderTiles("Stamen.TerrainBackground", group='Terrain') %>% 
+  addProviderTiles("CartoDB.DarkMatterNoLabels", group='Dark') %>% 
   addMapPane(name = "dots", zIndex = 410) %>%
-  # addMapPane(name = "maplabels", zIndex = 500) %>% # higher zIndex rendered on top
   addCircles(popup = ~as.character(well_type),
                    label = ~as.character(well_type),
                    radius = 1,
@@ -51,7 +49,7 @@ m <- leaflet(data = wells) %>%
   addProviderTiles("CartoDB.PositronOnlyLabels",
                    options=leafletOptions(zIndex=480),
                    group = "map labels") %>%
-  addLayersControl(baseGroups = c("Terrain","Monotone"),
+  addLayersControl(baseGroups = c("Terrain","Monotone",'Dark'),
                    overlayGroups = c("map labels","Well Locations")) %>%
       addLegend("bottomright", pal = pal, values = ~well_type,
     title = "Well Type ",
@@ -59,7 +57,7 @@ m <- leaflet(data = wells) %>%
 m
 ```
 
-## Natural Gas Pipelines
+## Natural Gas Pipelines: Europe, Asia, MENA
 
 Taken from the Harvard World Map datasets found at:
 https://worldmap.harvard.edu/data/geonode:natural_gas_pipelines_j96
@@ -94,7 +92,8 @@ https://worldmap.harvard.edu/data/geonode:location_of_the_worlds_petroleum_field
 pal1 <- colorFactor(c("gray", "red", 'forestgreen', 'darkmagenta'), 
                    domain=c('---', 'gas', 'oil', 'oil and gas'))
 
-m3 <- leaflet(data = fields) %>% 
+m3 <- leaflet(data = fields, options = leafletOptions(zoomSnap=0.1)) %>% 
+  setView(0, 30, zoom=1.7) %>%
   addPolygons(weight = 0, 
               smoothFactor = 0.5,
               opacity = 0, 
@@ -104,8 +103,26 @@ m3 <- leaflet(data = fields) %>%
               highlightOptions = highlightOptions(weight = 5,
                                                   color = "white",
                                                   fillOpacity = 0.7,
-                                                  bringToFront = TRUE))  %>% 
-  addProviderTiles("CartoDB.DarkMatter")
+                                                  bringToFront = TRUE),
+              group = 'Fields')  %>% 
+  
+    addPolylines(data = pipelines,
+                 weight = 1, color = 'slategray',
+               opacity=0.7,
+               popup = ~as.character(Name),
+               label = ~as.character(Name),
+               smoothFactor = 0.1,
+               highlightOptions =
+                 highlightOptions(color = "yellow",
+                                  weight = 3,
+                                  bringToFront = F,
+                                  opacity = .7),
+               group = 'Pipelines') %>%
+  addProviderTiles("CartoDB.DarkMatter") %>%
+addLegend("bottomright", pal = pal1, values = ~RESINFO,
+    title = "Oil & Gas Fields",
+    opacity = 0.6) %>%
+addLayersControl(overlayGroups = c("Fields","Pipelines"))
 
 m3
 ```

@@ -3,8 +3,7 @@ title: "Homework 2"
 author: "Jared Kohler"
 date: "10/1/2019"
 output:
-  html_document: default
-  pdf_document: default
+html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -20,6 +19,7 @@ require(stringr)
 ```{r}
 wells <- readOGR("pa_drilling_2000_2016.geojson")
 pipelines <- readOGR('natural_gas_pipelines_j96.json')
+fields <- readOGR('location_of_the_worlds_petroleum_fields__xtl.json')
 ```
 
 ## Oil and Gas Wells Drilled in the State of PA (2000-2019)
@@ -65,37 +65,47 @@ Taken from the Harvard World Map datasets found at:
 https://worldmap.harvard.edu/data/geonode:natural_gas_pipelines_j96
 
 ```{r}
-
-
-m <- leaflet(data = pipelines) %>% 
+m2 <- leaflet(data = pipelines) %>%
   setView(60, 40, zoom = 2) %>%
-  addPolylines(weight = 1, color = 'green', 
+  addPolylines(weight = 1, color = 'green',
                opacity=0.7,
                popup = ~as.character(Name),
                label = ~as.character(Name),
                smoothFactor = 0.1,
-               highlightOptions = 
-                 highlightOptions(color = "white", 
-                                  weight = 3, 
-                                  bringToFront = F, 
-                                  opacity = .7)) %>% 
+               highlightOptions =
+                 highlightOptions(color = "white",
+                                  weight = 3,
+                                  bringToFront = F,
+                                  opacity = .7)) %>%
   addProviderTiles("CartoDB.DarkMatter", group='Monotone')
-  # addLayersControl(baseGroups = c("Terrain","Monotone"),
-                   # overlayGroups = c("map labels","Well Locations")) %>%
-    #   addLegend("bottomright", pal = pal, values = ~well_type,
-    # title = "Well Type ",
-    # opacity = 0.6)
-m
+
+m2
 ```
 
 
 
-## Including Plots
+## World Oil and Gas Fields
 
-You can also embed plots, for example:
+Data found here:
+https://worldmap.harvard.edu/data/geonode:location_of_the_worlds_petroleum_fields__xtl
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+
+pal1 <- colorFactor(c("gray", "red", 'forestgreen', 'darkmagenta'), 
+                   domain=c('---', 'gas', 'oil', 'oil and gas'))
+
+m3 <- leaflet(data = fields) %>% 
+  addPolygons(weight = 0, 
+              smoothFactor = 0.5,
+              opacity = 0, 
+              fillOpacity = 1,
+              label = fields@data[["NAME"]],
+              fillColor = ~pal1(RESINFO),
+              highlightOptions = highlightOptions(weight = 5,
+                                                  color = "white",
+                                                  fillOpacity = 0.7,
+                                                  bringToFront = TRUE))  %>% 
+  addProviderTiles("CartoDB.DarkMatter")
+
+m3
 ```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
